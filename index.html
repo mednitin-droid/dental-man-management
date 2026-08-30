@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>9 Corps Dental Unit Register</title>
+<meta name="description" content="Leave and TD register for 9 Corps Dental Unit personnel" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#313D29" />
+<link rel="icon" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Dental Register" />
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+html, body { margin: 0; padding: 0; }
+body { background: #EFE6D0; }
+
+.dr-root {
+  --ink: #1F2A1D; --paper: #EFE6D0; --paper-alt: #E6DBBB; --card: #FBF8F0;
+  --olive: #45543A; --olive-dark: #313D29; --brass: #A9862F;
+  --leave: #8B3A3A; --td: #2F5A73; --line: #C9BB92; --muted: #6B6650;
+  font-family: 'IBM Plex Sans', sans-serif; color: var(--ink); background: var(--paper);
+  min-height: 100vh; width: 100%; box-sizing: border-box; padding-bottom: 40px;
+}
+.dr-root *, .dr-root *::before, .dr-root *::after { box-sizing: border-box; }
+
+.dr-header { background: var(--olive-dark); color: var(--card); padding: 20px 16px 0; }
+.dr-title { font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; font-size: 19px; margin: 0; }
+.dr-subtitle { font-size: 12px; color: #C9CBB0; letter-spacing: 0.06em; text-transform: uppercase; margin: 3px 0 16px; }
+.dr-tabs { display: flex; gap: 4px; overflow-x: auto; }
+.dr-tab { font-family: 'IBM Plex Sans', sans-serif; font-weight: 500; font-size: 12px; background: transparent; border: none; color: #C9CBB0; padding: 10px 10px; border-radius: 6px 6px 0 0; cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
+.dr-tab[aria-selected="true"] { background: var(--paper); color: var(--ink); }
+.dr-tab:focus-visible { outline: 2px solid var(--brass); outline-offset: -2px; }
+
+.dr-body { padding: 20px 16px 0; max-width: 720px; margin: 0 auto; }
+.dr-section-label { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: var(--muted); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+.dr-section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.dr-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.dr-empty { text-align: center; padding: 32px 16px; color: var(--muted); }
+.dr-empty p { margin: 0 0 14px; font-size: 14px; }
+.dr-btn { font-family: 'IBM Plex Sans', sans-serif; font-weight: 500; font-size: 14px; background: var(--olive); color: var(--card); border: none; border-radius: 6px; padding: 10px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.dr-btn:hover { background: var(--olive-dark); }
+.dr-btn:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.dr-btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.dr-btn-ghost:hover { background: var(--paper-alt); }
+.dr-field { margin-bottom: 14px; }
+.dr-field label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 5px; }
+.dr-field input, .dr-field select { width: 100%; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--card); color: var(--ink); }
+.dr-field input:focus-visible, .dr-field select:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+.dr-field-mono input { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.03em; }
+.dr-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dr-hint { font-size: 12px; color: var(--olive); margin-top: 4px; }
+.dr-type-toggle { display: flex; gap: 8px; }
+.dr-type-btn { flex: 1; padding: 9px; border-radius: 5px; border: 1px solid var(--line); background: var(--card); font-size: 13px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.03em; }
+.dr-type-btn[data-active="true"][data-type="Leave"] { background: var(--leave); color: var(--card); border-color: var(--leave); }
+.dr-type-btn[data-active="true"][data-type="TD"] { background: var(--td); color: var(--card); border-color: var(--td); }
+.dr-warning { background: #F3E3C6; border: 1px solid var(--brass); border-radius: 6px; padding: 12px; margin-bottom: 14px; font-size: 13px; }
+.dr-warning-title { display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 6px; color: #6B4E14; }
+.dr-search-box { display: flex; gap: 8px; margin-bottom: 20px; }
+.dr-search-box input { flex: 1; font-family: 'IBM Plex Mono', monospace; font-size: 16px; letter-spacing: 0.04em; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
+.dr-search-box input:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+.dr-suggest-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.dr-suggest-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; cursor: pointer; font-size: 13px; }
+.dr-suggest-item:hover { background: var(--paper-alt); }
+.dr-service-card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; position: relative; margin-bottom: 18px; }
+.dr-ribbon { display: inline-block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--card); padding: 4px 10px; border-radius: 3px; margin-bottom: 10px; }
+.dr-seal { position: absolute; top: 16px; right: 16px; width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--brass); color: var(--brass); display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-size: 9px; font-weight: 600; text-align: center; letter-spacing: 0.02em; line-height: 1.1; transform: rotate(-8deg); }
+.dr-service-name { font-family: 'Oswald', sans-serif; font-size: 21px; font-weight: 600; margin: 0 0 2px; padding-right: 56px; }
+.dr-service-id { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); letter-spacing: 0.06em; margin: 0 0 14px; }
+.dr-stats-row { display: flex; gap: 20px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.dr-stat-num { font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 600; line-height: 1; }
+.dr-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 2px; }
+.dr-ledger { display: flex; flex-direction: column; gap: 8px; }
+.dr-entry { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.dr-entry-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--card); padding: 3px 7px; border-radius: 3px; flex-shrink: 0; }
+.dr-entry-dates { font-family: 'IBM Plex Mono', monospace; font-size: 13px; flex: 1; min-width: 0; }
+.dr-entry-notes { font-size: 12px; color: var(--muted); display: block; margin-top: 2px; font-family: 'IBM Plex Sans', sans-serif; }
+.dr-entry-days { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.dr-del-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 4px; flex-shrink: 0; display: flex; }
+.dr-del-btn:hover { color: var(--leave); background: var(--paper-alt); }
+.dr-roster-group { margin-bottom: 18px; }
+.dr-roster-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.dr-roster-row:hover { background: var(--paper-alt); }
+.dr-roster-id { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); width: 74px; flex-shrink: 0; }
+.dr-roster-name { flex: 1; font-size: 14px; font-weight: 500; }
+.dr-roster-counts { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.dr-confirm-row { display: flex; gap: 10px; align-items: center; font-size: 12px; flex-shrink: 0; }
+.dr-confirm-row button { background: transparent; border: none; cursor: pointer; font-weight: 600; color: var(--ink); }
+.dr-offline-badge { display: inline-block; font-size: 11px; background: var(--paper-alt); color: var(--muted); padding: 3px 8px; border-radius: 10px; margin-top: 8px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .dr-tab, .dr-btn, .dr-roster-row, .dr-suggest-item { transition: background 0.15s ease, color 0.15s ease; }
+}
+@media (max-width: 420px) {
+  .dr-row2 { grid-template-columns: 1fr; }
+  .dr-service-name { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+<script type="text/plain" id="app-source">
+const { useState, useEffect, useMemo } = React;
+
+/* ---------- storage (localStorage, this device only) ---------- */
+const localStore = {
+  async get(key) {
+    const v = localStorage.getItem(key);
+    return v === null ? null : { key, value: v };
+  },
+  async set(key, value) {
+    localStorage.setItem(key, value);
+    return { key, value };
+  },
+};
+
+/* ---------- icons (hand-drawn, no external icon package) ---------- */
+function Icon({ children, size = 24, color, ...props }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || 'currentColor'}
+         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      {children}
+    </svg>
+  );
+}
+const Search = (p) => <Icon {...p}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></Icon>;
+const Plus = (p) => <Icon {...p}><path d="M5 12h14" /><path d="M12 5v14" /></Icon>;
+const Users = (p) => <Icon {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></Icon>;
+const Trash2 = (p) => <Icon {...p}><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></Icon>;
+const AlertTriangle = (p) => <Icon {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></Icon>;
+const ChevronRight = (p) => <Icon {...p}><path d="m9 18 6-6-6-6" /></Icon>;
+
+/* ---------- constants & helpers ---------- */
+const STORAGE_KEY = 'dental-unit-register-2027';
+const SEED_DEPARTMENTS = [
+  'Prosthodontics', 'Maxillofacial Surgery', 'General Dentistry',
+  'Periodontics', 'Orthodontics', 'Conservative Dentistry & Endodontics',
+  'Oral Medicine & Radiology', 'Pedodontics', 'Public Health Dentistry',
+  'Oral Pathology & Microbiology',
+  'Dental Technicians', 'Drivers', 'Clerks', 'Housekeepers', 'Storekeepers',
+];
+const DEPT_PALETTE = ['#5B7B8C', '#7A6A8A', '#6E8B5A', '#B08652', '#8C6B7B', '#5A7A7A', '#7B6B4F', '#4F7B6B', '#8A6B47', '#6B5F8A', '#7A8A9C', '#A38B4C', '#7A4F5C', '#4F6B4F', '#8C7A6B'];
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function daysBetween(start, end) {
+  const s = new Date(start + 'T00:00:00'); const e = new Date(end + 'T00:00:00');
+  return Math.round((e - s) / 86400000) + 1;
+}
+function formatDate(d) {
+  const date = new Date(d + 'T00:00:00');
+  return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function findOverlaps(records, uniqueNo, start, end) {
+  const s = new Date(start + 'T00:00:00'); const e = new Date(end + 'T00:00:00');
+  return records.filter((r) => {
+    if (r.uniqueNo !== uniqueNo) return false;
+    const rs = new Date(r.startDate + 'T00:00:00'); const re = new Date(r.endDate + 'T00:00:00');
+    return s <= re && e >= rs;
+  });
+}
+
+/* ---------- header ---------- */
+function Header({ tab, setTab, count }) {
+  const tabs = [
+    { id: 'roster', label: 'Roster', icon: Users },
+    { id: 'add', label: 'Add Entry', icon: Plus },
+    { id: 'lookup', label: 'Look Up', icon: Search },
+  ];
+  return (
+    <div className="dr-header">
+      <h1 className="dr-title">9 Corps Dental Unit</h1>
+      <p className="dr-subtitle">Leave &amp; TD Register — 2027{count ? ` · ${count} on roll` : ''}</p>
+      <div className="dr-tabs" role="tablist">
+        {tabs.map((t) => (
+          <button key={t.id} role="tab" aria-selected={tab === t.id} className="dr-tab" onClick={() => setTab(t.id)}>
+            <t.icon size={14} />{t.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- roster ---------- */
+function RosterView({ personnel, records, deptColors, onSelect, goAdd }) {
+  if (personnel.length === 0) {
+    return (
+      <div className="dr-empty">
+        <p>No personnel on the register yet.</p>
+        <button className="dr-btn" onClick={goAdd}><Plus size={15} /> Add your first entry</button>
+      </div>
+    );
+  }
+  const byDept = {};
+  personnel.forEach((p) => { if (!byDept[p.department]) byDept[p.department] = []; byDept[p.department].push(p); });
+  return (
+    <div>
+      {Object.entries(byDept).map(([dept, people]) => (
+        <div className="dr-roster-group" key={dept}>
+          <p className="dr-section-label" style={{ color: deptColors[dept] }}>{dept}</p>
+          {[...people].sort((a, b) => a.name.localeCompare(b.name)).map((p) => {
+            const mine = records.filter((r) => r.uniqueNo === p.id);
+            const leaveDays = mine.filter((r) => r.type === 'Leave').reduce((s, r) => s + daysBetween(r.startDate, r.endDate), 0);
+            const tdDays = mine.filter((r) => r.type === 'TD').reduce((s, r) => s + daysBetween(r.startDate, r.endDate), 0);
+            return (
+              <div className="dr-roster-row" key={p.id} onClick={() => onSelect(p.id)}>
+                <span className="dr-roster-id">{p.id}</span>
+                <span className="dr-roster-name">{p.name}</span>
+                <span className="dr-roster-counts">{leaveDays}d leave · {tdDays}d TD</span>
+                <ChevronRight size={15} color="var(--muted)" />
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------- add entry ---------- */
+function AddView({ data, onAdd, departments, onNewDept }) {
+  const [uniqueNo, setUniqueNo] = useState('');
+  const [name, setName] = useState('');
+  const [department, setDepartment] = useState('');
+  const [customDept, setCustomDept] = useState('');
+  const [type, setType] = useState('Leave');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [notes, setNotes] = useState('');
+  const [formError, setFormError] = useState('');
+  const [overlapWarning, setOverlapWarning] = useState(null);
+  const [success, setSuccess] = useState('');
+
+  const existingPerson = useMemo(() => data.personnel.find((p) => p.id === uniqueNo.trim()), [uniqueNo, data.personnel]);
+
+  useEffect(() => {
+    if (existingPerson) { setName(existingPerson.name); setDepartment(existingPerson.department); }
+  }, [existingPerson?.id]);
+
+  function resetForm() {
+    setUniqueNo(''); setName(''); setDepartment(''); setCustomDept('');
+    setType('Leave'); setStartDate(''); setEndDate(''); setNotes('');
+    setOverlapWarning(null); setFormError('');
+  }
+
+  function submit(force) {
+    setFormError('');
+    const finalDept = department === '__custom__' ? customDept.trim() : department;
+    if (!uniqueNo.trim() || !name.trim() || !finalDept || !startDate || !endDate) {
+      setFormError('Please fill in every field before adding.'); return;
+    }
+    if (new Date(endDate) < new Date(startDate)) {
+      setFormError('End date has to fall on or after the start date.'); return;
+    }
+    if (!force) {
+      const overlaps = findOverlaps(data.records, uniqueNo.trim(), startDate, endDate);
+      if (overlaps.length) { setOverlapWarning(overlaps); return; }
+    }
+    onAdd({ uniqueNo: uniqueNo.trim(), name: name.trim(), department: finalDept, type, startDate, endDate, notes: notes.trim() });
+    if (department === '__custom__' && customDept.trim()) onNewDept(customDept.trim());
+    setSuccess(`Added ${type.toLowerCase()} for ${name.trim()}.`);
+    resetForm();
+    setTimeout(() => setSuccess(''), 3000);
+  }
+
+  return (
+    <div>
+      <p className="dr-section-label">Personnel</p>
+      <div className="dr-card">
+        <div className="dr-field dr-field-mono">
+          <label>Unique No.</label>
+          <input value={uniqueNo} onChange={(e) => setUniqueNo(e.target.value)} placeholder="e.g. IC-45210" />
+          {existingPerson && <p className="dr-hint">On file: {existingPerson.name} · {existingPerson.department}</p>}
+        </div>
+        <div className="dr-field">
+          <label>Name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
+        </div>
+        <div className="dr-field">
+          <label>Department</label>
+          <select value={department} onChange={(e) => setDepartment(e.target.value)}>
+            <option value="">Select department</option>
+            {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+            <option value="__custom__">Other…</option>
+          </select>
+          {department === '__custom__' && (
+            <input style={{ marginTop: 8 }} value={customDept} onChange={(e) => setCustomDept(e.target.value)} placeholder="Department name" />
+          )}
+        </div>
+      </div>
+
+      <p className="dr-section-label">Leave / TD Entry</p>
+      <div className="dr-card">
+        <div className="dr-field">
+          <label>Type</label>
+          <div className="dr-type-toggle">
+            <button type="button" className="dr-type-btn" data-type="Leave" data-active={type === 'Leave'} onClick={() => setType('Leave')}>Leave</button>
+            <button type="button" className="dr-type-btn" data-type="TD" data-active={type === 'TD'} onClick={() => setType('TD')}>TD</button>
+          </div>
+        </div>
+        <div className="dr-row2">
+          <div className="dr-field"><label>Start Date</label><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></div>
+          <div className="dr-field"><label>End Date</label><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></div>
+        </div>
+        <div className="dr-field">
+          <label>Notes (optional)</label>
+          <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. Annual leave, TD to Command Hospital" />
+        </div>
+
+        {overlapWarning && (
+          <div className="dr-warning">
+            <div className="dr-warning-title"><AlertTriangle size={14} /> Overlaps an existing entry</div>
+            {overlapWarning.map((o) => <div key={o.id}>{o.type}: {formatDate(o.startDate)} – {formatDate(o.endDate)}</div>)}
+            <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+              <button className="dr-btn" onClick={() => submit(true)}>Add anyway</button>
+              <button className="dr-btn dr-btn-ghost" onClick={() => setOverlapWarning(null)}>Cancel</button>
+            </div>
+          </div>
+        )}
+        {formError && <p className="dr-hint" style={{ color: 'var(--leave)' }}>{formError}</p>}
+        {success && <p className="dr-hint">{success}</p>}
+        {!overlapWarning && <button className="dr-btn" onClick={() => submit(false)}><Plus size={15} /> Add to Register</button>}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- lookup ---------- */
+function LookupView({ data, deptColors, initialQuery, onDelete }) {
+  const [query, setQuery] = useState(initialQuery || '');
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  useEffect(() => { if (initialQuery) setQuery(initialQuery); }, [initialQuery]);
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return data.personnel.filter((p) => p.id.toLowerCase().includes(q) || p.name.toLowerCase().includes(q));
+  }, [query, data.personnel]);
+
+  const exact = matches.find((p) => p.id.toLowerCase() === query.trim().toLowerCase());
+  const person = exact || (matches.length === 1 ? matches[0] : null);
+  const personRecords = person
+    ? [...data.records].filter((r) => r.uniqueNo === person.id).sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+    : [];
+  const leaveDays = personRecords.filter((r) => r.type === 'Leave').reduce((s, r) => s + daysBetween(r.startDate, r.endDate), 0);
+  const tdDays = personRecords.filter((r) => r.type === 'TD').reduce((s, r) => s + daysBetween(r.startDate, r.endDate), 0);
+
+  return (
+    <div>
+      <div className="dr-search-box">
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Enter unique no. or name" autoFocus />
+      </div>
+      {!query && <div className="dr-empty"><p>Enter a unique number to pull up a full-year record.</p></div>}
+      {query && matches.length === 0 && <div className="dr-empty"><p>No record found for "{query}". Check the number, or add them from Add Entry.</p></div>}
+      {query && !person && matches.length > 1 && (
+        <div className="dr-suggest-list">
+          {matches.map((m) => (
+            <div key={m.id} className="dr-suggest-item" onClick={() => setQuery(m.id)}>
+              <span>{m.name} <span style={{ color: 'var(--muted)' }}>· {m.department}</span></span>
+              <span className="dr-roster-id">{m.id}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {person && (
+        <>
+          <div className="dr-service-card">
+            <span className="dr-ribbon" style={{ background: deptColors[person.department] || 'var(--olive)' }}>{person.department}</span>
+            <div className="dr-seal">ON<br />FILE</div>
+            <h2 className="dr-service-name">{person.name}</h2>
+            <p className="dr-service-id">No. {person.id}</p>
+            <div className="dr-stats-row">
+              <div><div className="dr-stat-num" style={{ color: 'var(--leave)' }}>{leaveDays}</div><div className="dr-stat-label">Leave days</div></div>
+              <div><div className="dr-stat-num" style={{ color: 'var(--td)' }}>{tdDays}</div><div className="dr-stat-label">TD days</div></div>
+              <div><div className="dr-stat-num">{personRecords.length}</div><div className="dr-stat-label">Entries</div></div>
+            </div>
+          </div>
+          <p className="dr-section-label">Year Ledger</p>
+          {personRecords.length === 0 ? (
+            <div className="dr-empty"><p>No leave or TD logged yet for {person.name}.</p></div>
+          ) : (
+            <div className="dr-ledger">
+              {personRecords.map((r) => (
+                <div className="dr-entry" key={r.id}>
+                  <span className="dr-entry-tag" style={{ background: r.type === 'Leave' ? 'var(--leave)' : 'var(--td)' }}>{r.type}</span>
+                  <span className="dr-entry-dates">{formatDate(r.startDate)} – {formatDate(r.endDate)}{r.notes && <span className="dr-entry-notes">{r.notes}</span>}</span>
+                  <span className="dr-entry-days">{daysBetween(r.startDate, r.endDate)}d</span>
+                  {confirmDelete === r.id ? (
+                    <div className="dr-confirm-row">
+                      <button onClick={() => { onDelete(r.id); setConfirmDelete(null); }}>Yes</button>
+                      <button onClick={() => setConfirmDelete(null)}>No</button>
+                    </div>
+                  ) : (
+                    <button className="dr-del-btn" onClick={() => setConfirmDelete(r.id)}><Trash2 size={14} /></button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ---------- app ---------- */
+function App() {
+  const [data, setData] = useState({ personnel: [], records: [] });
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('roster');
+  const [lookupQuery, setLookupQuery] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [departments, setDepartments] = useState(SEED_DEPARTMENTS);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await localStore.get(STORAGE_KEY);
+        if (result && result.value) {
+          const parsed = JSON.parse(result.value);
+          setData(parsed);
+          const extra = Array.from(new Set((parsed.personnel || []).map((p) => p.department)));
+          setDepartments((prev) => Array.from(new Set([...prev, ...extra])));
+        }
+      } catch (e) { /* no saved data yet */ }
+      finally { setLoading(false); }
+    })();
+  }, []);
+
+  async function persist(next) {
+    setData(next);
+    try {
+      const result = await localStore.set(STORAGE_KEY, JSON.stringify(next));
+      setSaveError(result ? '' : 'Could not save that change — please try again.');
+    } catch (e) { setSaveError('Could not save that change — please try again.'); }
+  }
+
+  function handleAdd(entry) {
+    const nextPersonnel = [...data.personnel];
+    const idx = nextPersonnel.findIndex((p) => p.id === entry.uniqueNo);
+    if (idx >= 0) nextPersonnel[idx] = { ...nextPersonnel[idx], name: entry.name, department: entry.department };
+    else nextPersonnel.push({ id: entry.uniqueNo, name: entry.name, department: entry.department });
+    const nextRecords = [...data.records, { id: genId(), uniqueNo: entry.uniqueNo, type: entry.type, startDate: entry.startDate, endDate: entry.endDate, notes: entry.notes }];
+    persist({ personnel: nextPersonnel, records: nextRecords });
+  }
+  function handleDelete(recordId) { persist({ ...data, records: data.records.filter((r) => r.id !== recordId) }); }
+  function handleNewDept(d) { setDepartments((prev) => (prev.includes(d) ? prev : [...prev, d])); }
+  function goToLookup(id) { setLookupQuery(id); setTab('lookup'); }
+
+  const deptColors = useMemo(() => {
+    const map = {}; departments.forEach((d, i) => { map[d] = DEPT_PALETTE[i % DEPT_PALETTE.length]; }); return map;
+  }, [departments]);
+
+  if (loading) {
+    return (
+      <div className="dr-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+        <p style={{ color: 'var(--muted)' }}>Loading register…</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dr-root">
+      <Header tab={tab} setTab={setTab} count={data.personnel.length} />
+      <div className="dr-body">
+        {saveError && <div className="dr-warning"><div className="dr-warning-title"><AlertTriangle size={14} /> {saveError}</div></div>}
+        {tab === 'roster' && <RosterView personnel={data.personnel} records={data.records} deptColors={deptColors} onSelect={goToLookup} goAdd={() => setTab('add')} />}
+        {tab === 'add' && <AddView data={data} onAdd={handleAdd} departments={departments} onNewDept={handleNewDept} />}
+        {tab === 'lookup' && <LookupView data={data} deptColors={deptColors} initialQuery={lookupQuery} onDelete={handleDelete} />}
+        <p style={{ textAlign: 'center' }}><span className="dr-offline-badge">Data stays on this device</span></p>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<script>
+(function () {
+  var source = document.getElementById('app-source').textContent;
+  var compiled = Babel.transform(source, {
+    presets: [['react', { runtime: 'classic' }]],
+  }).code;
+  var script = document.createElement('script');
+  script.textContent = compiled;
+  document.body.appendChild(script);
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
