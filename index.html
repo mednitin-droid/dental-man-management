@@ -70,6 +70,11 @@ body { background: #EFE6D0; }
 .dr-seal { position: absolute; top: 16px; right: 16px; width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--brass); color: var(--brass); display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-size: 9px; font-weight: 600; text-align: center; letter-spacing: 0.02em; line-height: 1.1; transform: rotate(-8deg); }
 .dr-service-name { font-family: 'Oswald', sans-serif; font-size: 21px; font-weight: 600; margin: 0 0 2px; padding-right: 56px; }
 .dr-service-id { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); letter-spacing: 0.06em; margin: 0 0 14px; }
+.dr-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px dashed var(--line); }
+.dr-detail-label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.dr-detail-value { display: block; font-size: 13px; font-weight: 500; margin-top: 1px; }
+.dr-posting-place { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500; flex: 1; min-width: 0; }
+.dr-posting-dates { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); margin-top: 2px; }
 .dr-stats-row { display: flex; gap: 20px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .dr-stat-num { font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 600; line-height: 1; }
 .dr-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 2px; }
@@ -148,6 +153,8 @@ const SEED_DEPARTMENTS = [
   'Dental Technicians', 'Drivers', 'Clerks', 'Housekeepers', 'Storekeepers',
 ];
 const DEPT_PALETTE = ['#5B7B8C', '#7A6A8A', '#6E8B5A', '#B08652', '#8C6B7B', '#5A7A7A', '#7B6B4F', '#4F7B6B', '#8A6B47', '#6B5F8A', '#7A8A9C', '#A38B4C', '#7A4F5C', '#4F6B4F', '#8C7A6B'];
+const MARITAL_STATUS = ['Married', 'Unmarried'];
+const EDUCATION_LEVELS = ['Doctorate', 'Post-Graduate', 'Graduate', 'Diploma', 'Higher Secondary', 'Secondary', 'Below Secondary'];
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 function daysBetween(start, end) {
@@ -213,7 +220,7 @@ function RosterView({ personnel, records, deptColors, onSelect, goAdd }) {
             return (
               <div className="dr-roster-row" key={p.id} onClick={() => onSelect(p.id)}>
                 <span className="dr-roster-id">{p.id}</span>
-                <span className="dr-roster-name">{p.name}</span>
+                <span className="dr-roster-name">{p.rank ? `${p.rank} ` : ''}{p.name}</span>
                 <span className="dr-roster-counts">{leaveDays}d leave · {tdDays}d TD</span>
                 <ChevronRight size={15} color="var(--muted)" />
               </div>
@@ -226,11 +233,29 @@ function RosterView({ personnel, records, deptColors, onSelect, goAdd }) {
 }
 
 /* ---------- add entry ---------- */
-function AddView({ data, onAdd, departments, onNewDept }) {
+function AddView({ data, onSaveDetails, onAddPosting, onAddLeave, departments, onNewDept }) {
   const [uniqueNo, setUniqueNo] = useState('');
+  const [rank, setRank] = useState('');
   const [name, setName] = useState('');
   const [department, setDepartment] = useState('');
   const [customDept, setCustomDept] = useState('');
+  const [contact, setContact] = useState('');
+  const [dob, setDob] = useState('');
+  const [dateOfJoining, setDateOfJoining] = useState('');
+  const [maritalStatus, setMaritalStatus] = useState('');
+  const [numChildren, setNumChildren] = useState('');
+  const [childrenNames, setChildrenNames] = useState('');
+  const [decorations, setDecorations] = useState('');
+  const [education, setEducation] = useState('');
+  const [detailsError, setDetailsError] = useState('');
+  const [detailsSuccess, setDetailsSuccess] = useState('');
+
+  const [postPlace, setPostPlace] = useState('');
+  const [postFrom, setPostFrom] = useState('');
+  const [postTo, setPostTo] = useState('');
+  const [postingError, setPostingError] = useState('');
+  const [postingSuccess, setPostingSuccess] = useState('');
+
   const [type, setType] = useState('Leave');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -242,20 +267,62 @@ function AddView({ data, onAdd, departments, onNewDept }) {
   const existingPerson = useMemo(() => data.personnel.find((p) => p.id === uniqueNo.trim()), [uniqueNo, data.personnel]);
 
   useEffect(() => {
-    if (existingPerson) { setName(existingPerson.name); setDepartment(existingPerson.department); }
+    if (existingPerson) {
+      setRank(existingPerson.rank || '');
+      setName(existingPerson.name || '');
+      setDepartment(existingPerson.department || '');
+      setContact(existingPerson.contact || '');
+      setDob(existingPerson.dob || '');
+      setDateOfJoining(existingPerson.dateOfJoining || '');
+      setMaritalStatus(existingPerson.maritalStatus || '');
+      setNumChildren(existingPerson.numChildren || '');
+      setChildrenNames(existingPerson.childrenNames || '');
+      setDecorations(existingPerson.decorations || '');
+      setEducation(existingPerson.education || '');
+    }
   }, [existingPerson?.id]);
 
-  function resetForm() {
-    setUniqueNo(''); setName(''); setDepartment(''); setCustomDept('');
+  function saveDetails() {
+    setDetailsError('');
+    const finalDept = department === '__custom__' ? customDept.trim() : department;
+    if (!uniqueNo.trim() || !name.trim() || !finalDept) {
+      setDetailsError('Personal Number, Name, and Department are needed to save.'); return;
+    }
+    onSaveDetails({
+      uniqueNo: uniqueNo.trim(), rank: rank.trim(), name: name.trim(), department: finalDept,
+      contact: contact.trim(), dob, dateOfJoining, maritalStatus,
+      numChildren: numChildren.toString().trim(), childrenNames: childrenNames.trim(),
+      decorations: decorations.trim(), education,
+    });
+    if (department === '__custom__' && customDept.trim()) onNewDept(customDept.trim());
+    setDetailsSuccess('Personal details saved.');
+    setTimeout(() => setDetailsSuccess(''), 3000);
+  }
+
+  function addPosting() {
+    setPostingError('');
+    if (!uniqueNo.trim() || !postPlace.trim() || !postFrom || !postTo) {
+      setPostingError('Personal Number, Place, and both dates are needed.'); return;
+    }
+    if (new Date(postTo) < new Date(postFrom)) {
+      setPostingError('End date has to fall on or after the start date.'); return;
+    }
+    onAddPosting({ uniqueNo: uniqueNo.trim(), place: postPlace.trim(), fromDate: postFrom, toDate: postTo });
+    setPostingSuccess(`Posting added: ${postPlace.trim()}.`);
+    setPostPlace(''); setPostFrom(''); setPostTo('');
+    setTimeout(() => setPostingSuccess(''), 3000);
+  }
+
+  function resetLeaveForm() {
     setType('Leave'); setStartDate(''); setEndDate(''); setNotes('');
     setOverlapWarning(null); setFormError('');
   }
 
-  function submit(force) {
+  function submitLeave(force) {
     setFormError('');
     const finalDept = department === '__custom__' ? customDept.trim() : department;
-    if (!uniqueNo.trim() || !name.trim() || !finalDept || !startDate || !endDate) {
-      setFormError('Please fill in every field before adding.'); return;
+    if (!uniqueNo.trim() || !name.trim() || !startDate || !endDate) {
+      setFormError('Personal Number, Name, and both dates are needed.'); return;
     }
     if (new Date(endDate) < new Date(startDate)) {
       setFormError('End date has to fall on or after the start date.'); return;
@@ -264,25 +331,27 @@ function AddView({ data, onAdd, departments, onNewDept }) {
       const overlaps = findOverlaps(data.records, uniqueNo.trim(), startDate, endDate);
       if (overlaps.length) { setOverlapWarning(overlaps); return; }
     }
-    onAdd({ uniqueNo: uniqueNo.trim(), name: name.trim(), department: finalDept, type, startDate, endDate, notes: notes.trim() });
-    if (department === '__custom__' && customDept.trim()) onNewDept(customDept.trim());
+    onAddLeave({ uniqueNo: uniqueNo.trim(), name: name.trim(), department: finalDept, type, startDate, endDate, notes: notes.trim() });
     setSuccess(`Added ${type.toLowerCase()} for ${name.trim()}.`);
-    resetForm();
+    resetLeaveForm();
     setTimeout(() => setSuccess(''), 3000);
   }
 
   return (
     <div>
-      <p className="dr-section-label">Personnel</p>
       <div className="dr-card">
         <div className="dr-field dr-field-mono">
-          <label>Unique No.</label>
+          <label>Personal Number</label>
           <input value={uniqueNo} onChange={(e) => setUniqueNo(e.target.value)} placeholder="e.g. IC-45210" />
-          {existingPerson && <p className="dr-hint">On file: {existingPerson.name} · {existingPerson.department}</p>}
+          {existingPerson && <p className="dr-hint">On file: {existingPerson.rank ? existingPerson.rank + ' ' : ''}{existingPerson.name} · {existingPerson.department}</p>}
         </div>
-        <div className="dr-field">
-          <label>Name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
+      </div>
+
+      <p className="dr-section-label">Personal Details</p>
+      <div className="dr-card">
+        <div className="dr-row2">
+          <div className="dr-field"><label>Rank</label><input value={rank} onChange={(e) => setRank(e.target.value)} placeholder="e.g. Capt, Hav, Civilian" /></div>
+          <div className="dr-field"><label>Name</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" /></div>
         </div>
         <div className="dr-field">
           <label>Department</label>
@@ -295,6 +364,57 @@ function AddView({ data, onAdd, departments, onNewDept }) {
             <input style={{ marginTop: 8 }} value={customDept} onChange={(e) => setCustomDept(e.target.value)} placeholder="Department name" />
           )}
         </div>
+        <div className="dr-field">
+          <label>Contact Details</label>
+          <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Mobile number" />
+        </div>
+        <div className="dr-row2">
+          <div className="dr-field"><label>Date of Birth</label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} /></div>
+          <div className="dr-field"><label>Date of Joining</label><input type="date" value={dateOfJoining} onChange={(e) => setDateOfJoining(e.target.value)} /></div>
+        </div>
+        <div className="dr-row2">
+          <div className="dr-field">
+            <label>Married / Unmarried</label>
+            <select value={maritalStatus} onChange={(e) => setMaritalStatus(e.target.value)}>
+              <option value="">Select</option>
+              {MARITAL_STATUS.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+          <div className="dr-field"><label>No. of Children</label><input type="number" min="0" value={numChildren} onChange={(e) => setNumChildren(e.target.value)} placeholder="0" /></div>
+        </div>
+        <div className="dr-field">
+          <label>Children's Names</label>
+          <input value={childrenNames} onChange={(e) => setChildrenNames(e.target.value)} placeholder="e.g. Aryan, Diya" />
+        </div>
+        <div className="dr-field">
+          <label>Decorations &amp; Awards</label>
+          <input value={decorations} onChange={(e) => setDecorations(e.target.value)} placeholder="e.g. Sena Medal" />
+        </div>
+        <div className="dr-field">
+          <label>Educational Qualification</label>
+          <select value={education} onChange={(e) => setEducation(e.target.value)}>
+            <option value="">Select</option>
+            {EDUCATION_LEVELS.map((ed) => <option key={ed} value={ed}>{ed}</option>)}
+          </select>
+        </div>
+        {detailsError && <p className="dr-hint" style={{ color: 'var(--leave)' }}>{detailsError}</p>}
+        {detailsSuccess && <p className="dr-hint">{detailsSuccess}</p>}
+        <button className="dr-btn" onClick={saveDetails}><Plus size={15} /> Save Personal Details</button>
+      </div>
+
+      <p className="dr-section-label">Posting Profile</p>
+      <div className="dr-card">
+        <div className="dr-field">
+          <label>Place of Posting</label>
+          <input value={postPlace} onChange={(e) => setPostPlace(e.target.value)} placeholder="e.g. Yol Cantt" />
+        </div>
+        <div className="dr-row2">
+          <div className="dr-field"><label>From</label><input type="date" value={postFrom} onChange={(e) => setPostFrom(e.target.value)} /></div>
+          <div className="dr-field"><label>To</label><input type="date" value={postTo} onChange={(e) => setPostTo(e.target.value)} /></div>
+        </div>
+        {postingError && <p className="dr-hint" style={{ color: 'var(--leave)' }}>{postingError}</p>}
+        {postingSuccess && <p className="dr-hint">{postingSuccess}</p>}
+        <button className="dr-btn" onClick={addPosting}><Plus size={15} /> Add Posting</button>
       </div>
 
       <p className="dr-section-label">Leave / TD Entry</p>
@@ -320,23 +440,24 @@ function AddView({ data, onAdd, departments, onNewDept }) {
             <div className="dr-warning-title"><AlertTriangle size={14} /> Overlaps an existing entry</div>
             {overlapWarning.map((o) => <div key={o.id}>{o.type}: {formatDate(o.startDate)} – {formatDate(o.endDate)}</div>)}
             <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-              <button className="dr-btn" onClick={() => submit(true)}>Add anyway</button>
+              <button className="dr-btn" onClick={() => submitLeave(true)}>Add anyway</button>
               <button className="dr-btn dr-btn-ghost" onClick={() => setOverlapWarning(null)}>Cancel</button>
             </div>
           </div>
         )}
         {formError && <p className="dr-hint" style={{ color: 'var(--leave)' }}>{formError}</p>}
         {success && <p className="dr-hint">{success}</p>}
-        {!overlapWarning && <button className="dr-btn" onClick={() => submit(false)}><Plus size={15} /> Add to Register</button>}
+        {!overlapWarning && <button className="dr-btn" onClick={() => submitLeave(false)}><Plus size={15} /> Add to Register</button>}
       </div>
     </div>
   );
 }
 
 /* ---------- lookup ---------- */
-function LookupView({ data, deptColors, initialQuery, onDelete }) {
+function LookupView({ data, deptColors, initialQuery, onDelete, onDeletePosting }) {
   const [query, setQuery] = useState(initialQuery || '');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmDeletePosting, setConfirmDeletePosting] = useState(null);
 
   useEffect(() => { if (initialQuery) setQuery(initialQuery); }, [initialQuery]);
 
@@ -351,15 +472,19 @@ function LookupView({ data, deptColors, initialQuery, onDelete }) {
   const personRecords = person
     ? [...data.records].filter((r) => r.uniqueNo === person.id).sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
     : [];
+  const personPostings = person
+    ? [...data.postings].filter((p) => p.uniqueNo === person.id).sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))
+    : [];
   const leaveDays = personRecords.filter((r) => r.type === 'Leave').reduce((s, r) => s + daysBetween(r.startDate, r.endDate), 0);
   const tdDays = personRecords.filter((r) => r.type === 'TD').reduce((s, r) => s + daysBetween(r.startDate, r.endDate), 0);
+  const hasChildInfo = person && (person.numChildren || person.childrenNames);
 
   return (
     <div>
       <div className="dr-search-box">
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Enter unique no. or name" autoFocus />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Enter personal number or name" autoFocus />
       </div>
-      {!query && <div className="dr-empty"><p>Enter a unique number to pull up a full-year record.</p></div>}
+      {!query && <div className="dr-empty"><p>Enter a personal number to pull up the full record.</p></div>}
       {query && matches.length === 0 && <div className="dr-empty"><p>No record found for "{query}". Check the number, or add them from Add Entry.</p></div>}
       {query && !person && matches.length > 1 && (
         <div className="dr-suggest-list">
@@ -376,15 +501,48 @@ function LookupView({ data, deptColors, initialQuery, onDelete }) {
           <div className="dr-service-card">
             <span className="dr-ribbon" style={{ background: deptColors[person.department] || 'var(--olive)' }}>{person.department}</span>
             <div className="dr-seal">ON<br />FILE</div>
-            <h2 className="dr-service-name">{person.name}</h2>
-            <p className="dr-service-id">No. {person.id}</p>
+            <h2 className="dr-service-name">{person.rank ? `${person.rank} ` : ''}{person.name}</h2>
+            <p className="dr-service-id">Personal No. {person.id}</p>
+            {(person.contact || person.dob || person.dateOfJoining || person.maritalStatus || person.education) && (
+              <div className="dr-detail-grid">
+                {person.contact && <div><span className="dr-detail-label">Contact</span><span className="dr-detail-value">{person.contact}</span></div>}
+                {person.dob && <div><span className="dr-detail-label">Date of Birth</span><span className="dr-detail-value">{formatDate(person.dob)}</span></div>}
+                {person.dateOfJoining && <div><span className="dr-detail-label">Joined Unit</span><span className="dr-detail-value">{formatDate(person.dateOfJoining)}</span></div>}
+                {person.maritalStatus && <div><span className="dr-detail-label">Marital Status</span><span className="dr-detail-value">{person.maritalStatus}</span></div>}
+                {person.education && <div><span className="dr-detail-label">Education</span><span className="dr-detail-value">{person.education}</span></div>}
+              </div>
+            )}
+            {hasChildInfo && <p className="dr-hint" style={{ marginTop: -8 }}>Children: {person.numChildren || '—'}{person.childrenNames ? ` (${person.childrenNames})` : ''}</p>}
+            {person.decorations && <p className="dr-hint" style={{ marginTop: 2, marginBottom: 8 }}>Decorations: {person.decorations}</p>}
             <div className="dr-stats-row">
               <div><div className="dr-stat-num" style={{ color: 'var(--leave)' }}>{leaveDays}</div><div className="dr-stat-label">Leave days</div></div>
               <div><div className="dr-stat-num" style={{ color: 'var(--td)' }}>{tdDays}</div><div className="dr-stat-label">TD days</div></div>
               <div><div className="dr-stat-num">{personRecords.length}</div><div className="dr-stat-label">Entries</div></div>
             </div>
           </div>
-          <p className="dr-section-label">Year Ledger</p>
+
+          <p className="dr-section-label">Posting Profile</p>
+          {personPostings.length === 0 ? (
+            <div className="dr-empty"><p>No postings logged yet for {person.name}.</p></div>
+          ) : (
+            <div className="dr-ledger">
+              {personPostings.map((p) => (
+                <div className="dr-entry" key={p.id}>
+                  <span className="dr-posting-place">{p.place}<span className="dr-posting-dates">{formatDate(p.fromDate)} – {formatDate(p.toDate)}</span></span>
+                  {confirmDeletePosting === p.id ? (
+                    <div className="dr-confirm-row">
+                      <button onClick={() => { onDeletePosting(p.id); setConfirmDeletePosting(null); }}>Yes</button>
+                      <button onClick={() => setConfirmDeletePosting(null)}>No</button>
+                    </div>
+                  ) : (
+                    <button className="dr-del-btn" onClick={() => setConfirmDeletePosting(p.id)}><Trash2 size={14} /></button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="dr-section-label" style={{ marginTop: 20 }}>Year Ledger</p>
           {personRecords.length === 0 ? (
             <div className="dr-empty"><p>No leave or TD logged yet for {person.name}.</p></div>
           ) : (
@@ -414,7 +572,7 @@ function LookupView({ data, deptColors, initialQuery, onDelete }) {
 
 /* ---------- app ---------- */
 function App() {
-  const [data, setData] = useState({ personnel: [], records: [] });
+  const [data, setData] = useState({ personnel: [], records: [], postings: [] });
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('roster');
   const [lookupQuery, setLookupQuery] = useState('');
@@ -427,8 +585,9 @@ function App() {
         const result = await localStore.get(STORAGE_KEY);
         if (result && result.value) {
           const parsed = JSON.parse(result.value);
-          setData(parsed);
-          const extra = Array.from(new Set((parsed.personnel || []).map((p) => p.department)));
+          const normalized = { personnel: parsed.personnel || [], records: parsed.records || [], postings: parsed.postings || [] };
+          setData(normalized);
+          const extra = Array.from(new Set(normalized.personnel.map((p) => p.department)));
           setDepartments((prev) => Array.from(new Set([...prev, ...extra])));
         }
       } catch (e) { /* no saved data yet */ }
@@ -444,15 +603,36 @@ function App() {
     } catch (e) { setSaveError('Could not save that change — please try again.'); }
   }
 
-  function handleAdd(entry) {
+  function handleSaveDetails(details) {
+    const nextPersonnel = [...data.personnel];
+    const idx = nextPersonnel.findIndex((p) => p.id === details.uniqueNo);
+    const fields = {
+      rank: details.rank, name: details.name, department: details.department,
+      contact: details.contact, dob: details.dob, dateOfJoining: details.dateOfJoining,
+      maritalStatus: details.maritalStatus, numChildren: details.numChildren,
+      childrenNames: details.childrenNames, decorations: details.decorations, education: details.education,
+    };
+    if (idx >= 0) nextPersonnel[idx] = { ...nextPersonnel[idx], ...fields };
+    else nextPersonnel.push({ id: details.uniqueNo, ...fields });
+    persist({ ...data, personnel: nextPersonnel });
+  }
+
+  function handleAddLeave(entry) {
     const nextPersonnel = [...data.personnel];
     const idx = nextPersonnel.findIndex((p) => p.id === entry.uniqueNo);
-    if (idx >= 0) nextPersonnel[idx] = { ...nextPersonnel[idx], name: entry.name, department: entry.department };
+    if (idx >= 0) nextPersonnel[idx] = { ...nextPersonnel[idx], name: entry.name, department: entry.department || nextPersonnel[idx].department };
     else nextPersonnel.push({ id: entry.uniqueNo, name: entry.name, department: entry.department });
     const nextRecords = [...data.records, { id: genId(), uniqueNo: entry.uniqueNo, type: entry.type, startDate: entry.startDate, endDate: entry.endDate, notes: entry.notes }];
-    persist({ personnel: nextPersonnel, records: nextRecords });
+    persist({ ...data, personnel: nextPersonnel, records: nextRecords });
   }
+
+  function handleAddPosting(posting) {
+    const nextPostings = [...data.postings, { id: genId(), uniqueNo: posting.uniqueNo, place: posting.place, fromDate: posting.fromDate, toDate: posting.toDate }];
+    persist({ ...data, postings: nextPostings });
+  }
+
   function handleDelete(recordId) { persist({ ...data, records: data.records.filter((r) => r.id !== recordId) }); }
+  function handleDeletePosting(postingId) { persist({ ...data, postings: data.postings.filter((p) => p.id !== postingId) }); }
   function handleNewDept(d) { setDepartments((prev) => (prev.includes(d) ? prev : [...prev, d])); }
   function goToLookup(id) { setLookupQuery(id); setTab('lookup'); }
 
@@ -474,8 +654,8 @@ function App() {
       <div className="dr-body">
         {saveError && <div className="dr-warning"><div className="dr-warning-title"><AlertTriangle size={14} /> {saveError}</div></div>}
         {tab === 'roster' && <RosterView personnel={data.personnel} records={data.records} deptColors={deptColors} onSelect={goToLookup} goAdd={() => setTab('add')} />}
-        {tab === 'add' && <AddView data={data} onAdd={handleAdd} departments={departments} onNewDept={handleNewDept} />}
-        {tab === 'lookup' && <LookupView data={data} deptColors={deptColors} initialQuery={lookupQuery} onDelete={handleDelete} />}
+        {tab === 'add' && <AddView data={data} onSaveDetails={handleSaveDetails} onAddPosting={handleAddPosting} onAddLeave={handleAddLeave} departments={departments} onNewDept={handleNewDept} />}
+        {tab === 'lookup' && <LookupView data={data} deptColors={deptColors} initialQuery={lookupQuery} onDelete={handleDelete} onDeletePosting={handleDeletePosting} />}
         <p style={{ textAlign: 'center' }}><span className="dr-offline-badge">Data stays on this device</span></p>
       </div>
     </div>
