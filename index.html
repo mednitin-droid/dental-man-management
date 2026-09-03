@@ -48,7 +48,8 @@ body { background: #EFE6D0; }
 .dr-btn-ghost:hover { background: var(--paper-alt); }
 .dr-field { margin-bottom: 14px; }
 .dr-field label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 5px; }
-.dr-field input, .dr-field select { width: 100%; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--card); color: var(--ink); }
+.dr-field input, .dr-field select, .dr-field textarea { width: 100%; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--card); color: var(--ink); }
+.dr-field textarea { resize: vertical; min-height: 70px; }
 .dr-field input:focus-visible, .dr-field select:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
 .dr-field-mono input { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.03em; }
 .dr-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -242,6 +243,9 @@ function AddView({ data, onSaveDetails, onAddPosting, onAddLeave, departments, o
   const [contact, setContact] = useState('');
   const [dob, setDob] = useState('');
   const [dateOfJoining, setDateOfJoining] = useState('');
+  const [wifeName, setWifeName] = useState('');
+  const [wifeContact, setWifeContact] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
   const [maritalStatus, setMaritalStatus] = useState('');
   const [numChildren, setNumChildren] = useState('');
   const [childrenNames, setChildrenNames] = useState('');
@@ -274,6 +278,9 @@ function AddView({ data, onSaveDetails, onAddPosting, onAddLeave, departments, o
       setContact(existingPerson.contact || '');
       setDob(existingPerson.dob || '');
       setDateOfJoining(existingPerson.dateOfJoining || '');
+      setWifeName(existingPerson.wifeName || '');
+      setWifeContact(existingPerson.wifeContact || '');
+      setAdditionalInfo(existingPerson.additionalInfo || '');
       setMaritalStatus(existingPerson.maritalStatus || '');
       setNumChildren(existingPerson.numChildren || '');
       setChildrenNames(existingPerson.childrenNames || '');
@@ -291,6 +298,7 @@ function AddView({ data, onSaveDetails, onAddPosting, onAddLeave, departments, o
     onSaveDetails({
       uniqueNo: uniqueNo.trim(), rank: rank.trim(), name: name.trim(), department: finalDept,
       contact: contact.trim(), dob, dateOfJoining, maritalStatus,
+      wifeName: wifeName.trim(), wifeContact: wifeContact.trim(), additionalInfo: additionalInfo.trim(),
       numChildren: numChildren.toString().trim(), childrenNames: childrenNames.trim(),
       decorations: decorations.trim(), education,
     });
@@ -370,7 +378,7 @@ function AddView({ data, onSaveDetails, onAddPosting, onAddLeave, departments, o
         </div>
         <div className="dr-row2">
           <div className="dr-field"><label>Date of Birth</label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} /></div>
-          <div className="dr-field"><label>Date of Joining</label><input type="date" value={dateOfJoining} onChange={(e) => setDateOfJoining(e.target.value)} /></div>
+          <div className="dr-field"><label>Date of Enrollment</label><input type="date" value={dateOfJoining} onChange={(e) => setDateOfJoining(e.target.value)} /></div>
         </div>
         <div className="dr-row2">
           <div className="dr-field">
@@ -380,6 +388,10 @@ function AddView({ data, onSaveDetails, onAddPosting, onAddLeave, departments, o
               {MARITAL_STATUS.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
+          <div className="dr-field"><label>Wife's Name</label><input value={wifeName} onChange={(e) => setWifeName(e.target.value)} placeholder="Full name" /></div>
+        </div>
+        <div className="dr-row2">
+          <div className="dr-field"><label>Wife's Contact No.</label><input value={wifeContact} onChange={(e) => setWifeContact(e.target.value)} placeholder="Mobile number" /></div>
           <div className="dr-field"><label>No. of Children</label><input type="number" min="0" value={numChildren} onChange={(e) => setNumChildren(e.target.value)} placeholder="0" /></div>
         </div>
         <div className="dr-field">
@@ -396,6 +408,10 @@ function AddView({ data, onSaveDetails, onAddPosting, onAddLeave, departments, o
             <option value="">Select</option>
             {EDUCATION_LEVELS.map((ed) => <option key={ed} value={ed}>{ed}</option>)}
           </select>
+        </div>
+        <div className="dr-field">
+          <label>Additional Information</label>
+          <textarea value={additionalInfo} onChange={(e) => setAdditionalInfo(e.target.value)} placeholder="Anything else worth noting" />
         </div>
         {detailsError && <p className="dr-hint" style={{ color: 'var(--leave)' }}>{detailsError}</p>}
         {detailsSuccess && <p className="dr-hint">{detailsSuccess}</p>}
@@ -503,17 +519,20 @@ function LookupView({ data, deptColors, initialQuery, onDelete, onDeletePosting 
             <div className="dr-seal">ON<br />FILE</div>
             <h2 className="dr-service-name">{person.rank ? `${person.rank} ` : ''}{person.name}</h2>
             <p className="dr-service-id">Personal No. {person.id}</p>
-            {(person.contact || person.dob || person.dateOfJoining || person.maritalStatus || person.education) && (
+            {(person.contact || person.dob || person.dateOfJoining || person.maritalStatus || person.education || person.wifeName || person.wifeContact) && (
               <div className="dr-detail-grid">
                 {person.contact && <div><span className="dr-detail-label">Contact</span><span className="dr-detail-value">{person.contact}</span></div>}
                 {person.dob && <div><span className="dr-detail-label">Date of Birth</span><span className="dr-detail-value">{formatDate(person.dob)}</span></div>}
-                {person.dateOfJoining && <div><span className="dr-detail-label">Joined Unit</span><span className="dr-detail-value">{formatDate(person.dateOfJoining)}</span></div>}
+                {person.dateOfJoining && <div><span className="dr-detail-label">Date of Enrollment</span><span className="dr-detail-value">{formatDate(person.dateOfJoining)}</span></div>}
                 {person.maritalStatus && <div><span className="dr-detail-label">Marital Status</span><span className="dr-detail-value">{person.maritalStatus}</span></div>}
                 {person.education && <div><span className="dr-detail-label">Education</span><span className="dr-detail-value">{person.education}</span></div>}
+                {person.wifeName && <div><span className="dr-detail-label">Wife's Name</span><span className="dr-detail-value">{person.wifeName}</span></div>}
+                {person.wifeContact && <div><span className="dr-detail-label">Wife's Contact</span><span className="dr-detail-value">{person.wifeContact}</span></div>}
               </div>
             )}
             {hasChildInfo && <p className="dr-hint" style={{ marginTop: -8 }}>Children: {person.numChildren || '—'}{person.childrenNames ? ` (${person.childrenNames})` : ''}</p>}
-            {person.decorations && <p className="dr-hint" style={{ marginTop: 2, marginBottom: 8 }}>Decorations: {person.decorations}</p>}
+            {person.decorations && <p className="dr-hint" style={{ marginTop: 2 }}>Decorations: {person.decorations}</p>}
+            {person.additionalInfo && <p className="dr-hint" style={{ marginTop: 2, marginBottom: 8 }}>Additional Info: {person.additionalInfo}</p>}
             <div className="dr-stats-row">
               <div><div className="dr-stat-num" style={{ color: 'var(--leave)' }}>{leaveDays}</div><div className="dr-stat-label">Leave days</div></div>
               <div><div className="dr-stat-num" style={{ color: 'var(--td)' }}>{tdDays}</div><div className="dr-stat-label">TD days</div></div>
@@ -609,6 +628,7 @@ function App() {
     const fields = {
       rank: details.rank, name: details.name, department: details.department,
       contact: details.contact, dob: details.dob, dateOfJoining: details.dateOfJoining,
+      wifeName: details.wifeName, wifeContact: details.wifeContact, additionalInfo: details.additionalInfo,
       maritalStatus: details.maritalStatus, numChildren: details.numChildren,
       childrenNames: details.childrenNames, decorations: details.decorations, education: details.education,
     };
