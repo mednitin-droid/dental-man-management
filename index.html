@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>9 Corps Dental Unit Register</title>
-<meta name="description" content="Leave and TD register for 9 Corps Dental Unit personnel" />
+<title>9 Corps Dental Unit — Troop Management</title>
+<meta name="description" content="Troop management for 9 Corps Dental Unit personnel" />
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#313D29" />
 <link rel="icon" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Dental Register" />
+<meta name="apple-mobile-web-app-title" content="Troop Mgmt" />
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -168,6 +168,15 @@ function formatDate(d) {
   const date = new Date(d + 'T00:00:00');
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
+function calculateAge(dob) {
+  if (!dob) return null;
+  const b = new Date(dob + 'T00:00:00');
+  const t = new Date();
+  let age = t.getFullYear() - b.getFullYear();
+  const m = t.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && t.getDate() < b.getDate())) age--;
+  return age;
+}
 function findOverlaps(records, uniqueNo, start, end) {
   const s = new Date(start + 'T00:00:00'); const e = new Date(end + 'T00:00:00');
   return records.filter((r) => {
@@ -190,7 +199,7 @@ function Header({ tab, setTab, count }) {
         <Tooth size={22} color="var(--brass)" />
         <h1 className="dr-title">9 Corps Dental Unit</h1>
       </div>
-      <p className="dr-subtitle">Leave &amp; TD Register — 2027{count ? ` · ${count} on roll` : ''}</p>
+      <p className="dr-subtitle">Troop Management{count ? ` · ${count} on roll` : ''}</p>
       <div className="dr-tabs" role="tablist">
         {tabs.map((t) => (
           <button key={t.id} role="tab" aria-selected={tab === t.id} className="dr-tab" onClick={() => setTab(t.id)}>
@@ -385,7 +394,11 @@ function AddView({ data, onSaveDetails, onAddPosting, onAddLeave, departments, o
           <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Mobile number" />
         </div>
         <div className="dr-row2">
-          <div className="dr-field"><label>Date of Birth</label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} /></div>
+          <div className="dr-field">
+            <label>Date of Birth</label>
+            <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
+            {dob && <p className="dr-hint">Age: {calculateAge(dob)} years</p>}
+          </div>
           <div className="dr-field"><label>Date of Enrollment</label><input type="date" value={dateOfJoining} onChange={(e) => setDateOfJoining(e.target.value)} /></div>
         </div>
         <div className="dr-row2">
@@ -535,6 +548,7 @@ function LookupView({ data, deptColors, initialQuery, onDelete, onDeletePosting 
               <div className="dr-detail-grid">
                 {person.contact && <div><span className="dr-detail-label">Contact</span><span className="dr-detail-value">{person.contact}</span></div>}
                 {person.dob && <div><span className="dr-detail-label">Date of Birth</span><span className="dr-detail-value">{formatDate(person.dob)}</span></div>}
+                {person.dob && <div><span className="dr-detail-label">Age</span><span className="dr-detail-value">{calculateAge(person.dob)} years</span></div>}
                 {person.dateOfJoining && <div><span className="dr-detail-label">Date of Enrollment</span><span className="dr-detail-value">{formatDate(person.dateOfJoining)}</span></div>}
                 {person.maritalStatus && <div><span className="dr-detail-label">Marital Status</span><span className="dr-detail-value">{person.maritalStatus}</span></div>}
                 {person.education && <div><span className="dr-detail-label">Education</span><span className="dr-detail-value">{person.education}</span></div>}

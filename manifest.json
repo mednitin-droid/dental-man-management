@@ -1,7 +1,7 @@
 {
-  "name": "9 Corps Dental Unit Register",
-  "short_name": "Dental Register",
-  "description": "Leave and TD register for 9 Corps Dental Unit personnel",
+  "name": "9 Corps Dental Unit — Troop Management",
+  "short_name": "Troop Mgmt",
+  "description": "Troop management for 9 Corps Dental Unit personnel",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -12,3 +12,4 @@
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
+
